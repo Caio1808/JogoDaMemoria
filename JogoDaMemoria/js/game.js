@@ -24,7 +24,6 @@ const createElement = (tag, className) => {
 let firstCard = '';
 let secondCard = '';
 
-// Função para verificar o final do jogo e salvar a melhor pontuação
 const checkEndGame = () => {
   const disabledCards = document.querySelectorAll('.disabled-card');
 
@@ -34,7 +33,6 @@ const checkEndGame = () => {
     const finalTime = parseInt(timer.innerHTML);
     const currentBest = localStorage.getItem('bestTime');
 
-    // Se não existir recorde ou se o tempo atual for menor (melhor) que o recorde
     if (currentBest === null || finalTime < parseInt(currentBest)) {
       localStorage.setItem('bestTime', finalTime);
       alert(`Parabéns, ${spanPlayer.innerHTML}! Você bateu o RECORDE com: ${finalTime} segundos!`);
@@ -42,23 +40,10 @@ const checkEndGame = () => {
       alert(`Parabéns, ${spanPlayer.innerHTML}! Seu tempo foi de: ${finalTime} segundos. (Melhor tempo: ${currentBest}s)`);
     }
 
-    // Aguarda 1.5 segundos após o alerta e volta para o menu inicial
     setTimeout(() => {
-      window.location = '../index.html'; // Ajuste o caminho se o seu arquivo de login tiver outro nome
+      window.location = '../index.html'; 
     }, 1500);
   }
-}
-
-// Atualizado para buscar o recorde e colocar na tela (opcional, se quiser exibir no header)
-window.onload = () => {
-  spanPlayer.innerHTML = localStorage.getItem('player');
-  
-  // Exibe o recorde no console apenas para teste, ou você pode criar um span no HTML para ele
-  const best = localStorage.getItem('bestTime');
-  console.log('O recorde atual é de: ' + (best ? best + 's' : 'Nenhum ainda'));
-
-  startTimer();
-  loadGame();
 }
 
 const checkCards = () => {
@@ -66,7 +51,6 @@ const checkCards = () => {
   const secondCharacter = secondCard.getAttribute('data-character');
 
   if (firstCharacter === secondCharacter) {
-
     firstCard.firstChild.classList.add('disabled-card');
     secondCard.firstChild.classList.add('disabled-card');
 
@@ -74,33 +58,33 @@ const checkCards = () => {
     secondCard = '';
 
     checkEndGame();
-
   } else {
     setTimeout(() => {
-
       firstCard.classList.remove('reveal-card');
       secondCard.classList.remove('reveal-card');
 
       firstCard = '';
       secondCard = '';
-
     }, 500);
   }
-
 }
 
 const revealCard = ({ target }) => {
   const clickedCard = target.parentNode;
 
+  if (timer.innerHTML === '00') {
+    return;
+  }
+
   if (!target.classList.contains('face') || secondCard !== '') {
     return;
   }
 
-   if (clickedCard.classList.contains('reveal-card') || clickedCard.firstChild.classList.contains('disabled-card')) {
+  if (clickedCard.classList.contains('reveal-card') || clickedCard.firstChild.classList.contains('disabled-card')) {
     return;
   }
 
-   clickedCard.classList.add('reveal-card');
+  clickedCard.classList.add('reveal-card');
 
   if (firstCard === '') {
     firstCard = clickedCard;
@@ -111,7 +95,6 @@ const revealCard = ({ target }) => {
 }
 
 const createCard = (character) => {
-
   const card = createElement('div', 'card');
   const front = createElement('div', 'face front');
   const back = createElement('div', 'face back');
@@ -122,14 +105,13 @@ const createCard = (character) => {
   card.appendChild(back);
 
   card.addEventListener('click', revealCard);
-  card.setAttribute('data-character', character)
+  card.setAttribute('data-character', character);
 
   return card;
 }
 
 const loadGame = () => {
   const duplicateCharacters = [...characters, ...characters];
-
   const shuffledArray = duplicateCharacters.sort(() => Math.random() - 0.5);
 
   shuffledArray.forEach((character) => {
@@ -138,18 +120,36 @@ const loadGame = () => {
   });
 }
 
-const startTimer = () => {
+const previewCards = () => {
+  const allCards = document.querySelectorAll('.card');
 
+  allCards.forEach((card) => {
+    card.classList.add('reveal-card');
+  });
+
+  
+  setTimeout(() => {
+    allCards.forEach((card) => {
+      card.classList.remove('reveal-card');
+    });
+    
+    startTimer();
+  }, 1000);
+}
+
+const startTimer = () => {
   this.loop = setInterval(() => {
     const currentTime = +timer.innerHTML;
     timer.innerHTML = currentTime + 1;
   }, 1000);
-
 }
 
 window.onload = () => {
   spanPlayer.innerHTML = localStorage.getItem('player');
-  startTimer();
-  loadGame();
-}
+  
+  const best = localStorage.getItem('bestTime');
+  console.log('O recorde atual é de: ' + (best ? best + 's' : 'Nenhum ainda'));
 
+  loadGame();      
+  previewCards();  
+}
